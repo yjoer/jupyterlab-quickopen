@@ -88,3 +88,21 @@ class QuickOpenHandler(APIHandler):
         self.write(
             json_encode({"scan_seconds": delta_ts, "contents": contents_by_path})
         )
+
+
+class FileTypeDetectionHandler(APIHandler):
+    @web.authenticated
+    async def get(self):
+        selected_path = self.get_argument("path")
+
+        with open(selected_path, "r") as f:
+            first_line = f.readline()
+
+        if first_line.startswith("# %%"):
+            widget_name = "Notebook"
+        elif first_line.startswith("# ---"):
+            widget_name = "Notebook"
+        else:
+            widget_name = "default"
+
+        self.write(json_encode({"widget_name": widget_name}))

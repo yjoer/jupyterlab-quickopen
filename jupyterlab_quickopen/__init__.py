@@ -10,6 +10,7 @@ except ImportError:
     __version__ = "dev"
 
 from pathlib import Path
+from .handler import FileTypeDetectionHandler
 from .handler import QuickOpenHandler
 from jupyter_server.utils import url_path_join
 
@@ -49,7 +50,11 @@ def _load_jupyter_server_extension(server_app):
     route_pattern = url_path_join(
         web_app.settings["base_url"], "jupyterlab-quickopen", "api", "files"
     )
+    route_pattern_ft = url_path_join(
+        web_app.settings["base_url"], "jupyterlab-quickopen", "api", "file-types"
+    )
     web_app.add_handlers(host_pattern, [(route_pattern, QuickOpenHandler)])
+    web_app.add_handlers(host_pattern, [(route_pattern_ft, FileTypeDetectionHandler)])
     server_app.log.info(
         f"Registered QuickOpenHandler extension at URL path {route_pattern} "
         f"to serve results of scanning local path {server_app.notebook_dir}"

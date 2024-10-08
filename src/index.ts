@@ -50,6 +50,27 @@ async function fetchContents(
   return await response.json();
 }
 
+async function fetchFileTypes(path: string) {
+  const params = new URLSearchParams();
+  params.append('path', path);
+
+  const settings = ServerConnection.makeSettings();
+  const fullUrl =
+    URLExt.join(settings.baseUrl, 'jupyterlab-quickopen', 'api', 'file-types') +
+    '?' +
+    params.toString();
+
+  const response = await ServerConnection.makeRequest(
+    fullUrl,
+    { method: 'GET' },
+    settings
+  );
+  if (response.status !== 200) {
+    throw new ServerConnection.ResponseError(response);
+  }
+  return await response.json();
+}
+
 /**
  * Shows files nested under directories in the root notebooks directory configured on the server.
  */
@@ -154,9 +175,13 @@ const extension: JupyterFrontEndPlugin<void> = {
 
     // Listen for path selection signals and show the selected files in the appropriate
     // editor/viewer
-    widget.pathSelected.connect((sender: QuickOpenWidget, path: string) => {
-      docManager.openOrReveal(PathExt.normalize(path));
-    });
+    widget.pathSelected.connect(
+      async (sender: QuickOpenWidget, path: string) => {
+        const response = await fetchFileTypes(path);
+
+        docManager.openOrReveal(PathExt.normalize(path), response.widget_name);
+      }
+    );
 
     // Listen for setting changes and apply them to the widget
     settings.changed.connect((settings: ISettingRegistry.ISettings) => {
