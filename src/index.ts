@@ -177,9 +177,14 @@ const extension: JupyterFrontEndPlugin<void> = {
     // editor/viewer
     widget.pathSelected.connect(
       async (sender: QuickOpenWidget, path: string) => {
-        const response = await fetchFileTypes(path);
+        let widgetName = 'default';
 
-        docManager.openOrReveal(PathExt.normalize(path), response.widget_name);
+        if (path.endsWith('.py')) {
+          const response = await fetchFileTypes(path);
+          widgetName = response.widget_name;
+        }
+
+        docManager.openOrReveal(PathExt.normalize(path), widgetName);
       }
     );
 
